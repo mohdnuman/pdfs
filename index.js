@@ -6,8 +6,8 @@ const { degrees, PDFDocument, rgb, StandardFonts } = require("pdf-lib");
 // In the browser, you could make a fetch() call and use res.arrayBuffer()
 const fs = require("fs");
 
-async function main(footer, bg,i) {
-  fs.readFile(`./pdfs/${i}.pdf`, async function (err, data) {
+async function main(footer, bg, filename) {
+  fs.readFile(`./pdfs/${filename}`, async function (err, data) {
     const pdfDoc = await PDFDocument.load(data);
     const [footerPdf] = await pdfDoc.embedPdf(footer);
     const pngImage = await pdfDoc.embedPng(bg);
@@ -35,14 +35,14 @@ async function main(footer, bg,i) {
     });
 
     const pdfBytes = await pdfDoc.save();
-    fs.writeFileSync(`./pdfs/${i}.pdf`, pdfBytes);
+    fs.writeFileSync(`./pdfs/${filename}`, pdfBytes);
   });
 }
 
-for (let i = 1; i < 101; i++) {
+fs.readdirSync("./pdfs").map((fileName) => {
   fs.readFile("./footer.pdf", (err, data) => {
     fs.readFile("./bck.png", (err, bg) => {
-      main(data, bg,i);
+      main(data, bg, fileName);
     });
   });
-}
+});
