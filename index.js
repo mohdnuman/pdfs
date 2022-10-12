@@ -7,36 +7,38 @@ const { degrees, PDFDocument, rgb, StandardFonts } = require("pdf-lib");
 const fs = require("fs");
 
 async function main(footer, bg, filename) {
-  fs.readFile(`./pdfs/${filename}`, async function (err, data) {
-    const pdfDoc = await PDFDocument.load(data);
-    const [footerPdf] = await pdfDoc.embedPdf(footer);
-    const pngImage = await pdfDoc.embedPng(bg);
+  if (filename.slice(filename.length-3) == "pdf") {
+    fs.readFile(`./pdfs/${filename}`, async function (err, data) {
+      const pdfDoc = await PDFDocument.load(data);
+      const [footerPdf] = await pdfDoc.embedPdf(footer);
+      const pngImage = await pdfDoc.embedPng(bg);
 
-    const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+      const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
 
-    const pages = pdfDoc.getPages();
-    const lastPage = pages[pages.length - 1];
+      const pages = pdfDoc.getPages();
+      const lastPage = pages[pages.length - 1];
 
-    const { width, height } = lastPage.getSize();
+      const { width, height } = lastPage.getSize();
 
-    const footerDims = footerPdf.scale(0.3);
-    const pngDims = pngImage.scale(0.5);
+      const footerDims = footerPdf.scale(0.3);
+      const pngDims = pngImage.scale(0.5);
 
-    lastPage.drawImage(pngImage, {
-      x: 0,
-      y: lastPage.getHeight() - 850,
-      width: width,
-      height: pngDims.height,
+      lastPage.drawImage(pngImage, {
+        x: 0,
+        y: lastPage.getHeight() - 850,
+        width: width,
+        height: pngDims.height,
+      });
+
+      lastPage.drawPage(footerPdf, {
+        x: 0,
+        y: lastPage.getHeight() - 850,
+      });
+
+      const pdfBytes = await pdfDoc.save();
+      fs.writeFileSync(`./pdfs/${filename}`, pdfBytes);
     });
-
-    lastPage.drawPage(footerPdf, {
-      x: 0,
-      y: lastPage.getHeight() - 850,
-    });
-
-    const pdfBytes = await pdfDoc.save();
-    fs.writeFileSync(`./pdfs/${filename}`, pdfBytes);
-  });
+  }
 }
 
 fs.readdirSync("./pdfs").map((fileName) => {
