@@ -7,7 +7,7 @@ const { degrees, PDFDocument, rgb, StandardFonts } = require("pdf-lib");
 const fs = require("fs");
 
 async function main(footer, bg, filename) {
-  if (filename.slice(filename.length-3) == "pdf") {
+  if (filename.slice(filename.length - 3) == "pdf") {
     fs.readFile(`./pdfs/${filename}`, async function (err, data) {
       const pdfDoc = await PDFDocument.load(data);
       const [footerPdf] = await pdfDoc.embedPdf(footer);
@@ -36,7 +36,11 @@ async function main(footer, bg, filename) {
       });
 
       const pdfBytes = await pdfDoc.save();
-      fs.writeFileSync(`./pdfs/${filename}`, pdfBytes);
+
+      if (!fs.existsSync("./new_pdfs")) {
+        fs.mkdirSync("./new_pdfs");
+      }
+      fs.writeFileSync(`./new_pdfs/${filename}`, pdfBytes);
     });
   }
 }
